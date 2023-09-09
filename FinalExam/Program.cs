@@ -25,6 +25,9 @@ namespace FinalExam
 
             builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
             builder.Services.AddTransient<IStudentRepository, StudentRepository>();
+            builder.Services.AddTransient<IStudentCourseRepository, StudentCourseRepository>();
+            builder.Services.AddTransient<ICourseRepository, CourseRepository>();
+            builder.Services.AddTransient<ITeacherRepository, TeacherRepository>();
 
             var app = builder.Build();
 

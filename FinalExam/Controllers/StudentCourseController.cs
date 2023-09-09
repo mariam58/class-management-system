@@ -21,47 +21,50 @@ namespace FinalExam.Controllers
         [HttpGet("GetStudentCourses")]
         public async Task<IActionResult> GetStudentCourses()
         {
-            var data = await _context.Set<StudentCourseEntity>()
-                .ToListAsync();
-            var settings = new JsonSerializerSettings()
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                Formatting = Formatting.Indented
-            };
-            var parsedData = JsonConvert.SerializeObject(data, settings);
-            return Ok(parsedData);
+            var data = await _uow.studentCourseRepository.GetAllAsync();
+            return Ok(data);
         }
 
         [HttpPost("AddStudentCourse")]
-        public async Task AddStudentCourse(Guid studentId, Guid courseId)
+        public async Task<IActionResult> AddStudentCourse(Guid studentId, Guid courseId)
         {
-            var studentCourse = new StudentCourseEntity
+            try
             {
-                StudentId = studentId,
-                CourseId = courseId
-            };
-            await _context.AddAsync(studentCourse);
-            await _context.SaveChangesAsync();
-        }
+                await _context.Database.BeginTransactionAsync();
+                var studentCourse = new StudentCourseEntity()
+                {
+                    StudentId = studentId,
+                    CourseId = courseId
+                };
 
-        [HttpPut("EditStudentCourse")]
-        public async Task<IActionResult> EditStudentCourse(Guid studentId, Guid courseId, Guid id)
-        {
-            var studentCourse = await _context.Set<StudentCourseEntity>().FirstOrDefaultAsync(x => x.Id == id);
-            studentCourse.StudentId = studentId;
-            studentCourse.CourseId = courseId;
-            _context.Set<StudentCourseEntity>().Update(studentCourse);
-            await _context.SaveChangesAsync();
-            return Ok();
+                await _uow.studentCourseRepository.Add(studentCourse);
+                await _context.Database.CommitTransactionAsync();
+                return Ok(studentCourse);
+            }
+            catch (Exception ex)
+            {
+                await _context.Database.RollbackTransactionAsync();
+                throw ex;
+            }
         }
 
         [HttpDelete("DeleteStudentCourse")]
         public async Task<IActionResult> DeleteStudentCourse(Guid id)
         {
-            var studentCourse = await _context.Set<StudentCourseEntity>().FirstOrDefaultAsync(x => x.Id == id);
-            _context.Set<StudentCourseEntity>().Remove(studentCourse);
-            await _context.SaveChangesAsync();
-            return Ok();
+            try
+            {
+                await _context.Database.BeginTransactionAsync();
+                var studentCourse = await _uow.studentCourseRepository.GetById(id);
+                if (studentCourse == null) throw new Exception("null");
+                await _uow.studentCourseRepository.Delete(studentCourse);
+                await _context.Database.CommitTransactionAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                await _context.Database.RollbackTransactionAsync();
+                throw ex;
+            }
         }
     }
 }
