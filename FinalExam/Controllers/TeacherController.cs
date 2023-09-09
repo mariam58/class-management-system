@@ -1,6 +1,7 @@
 ﻿using FinalExam.Entities;
 using FinalExam.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace FinalExam.Controllers
 {
@@ -20,7 +21,13 @@ namespace FinalExam.Controllers
         public async Task<IActionResult> GetTeacher()
         {
             var data = await _uow.teacherRepository.GetAllAsync();
-            return Ok(data);
+            var settings = new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                Formatting = Formatting.Indented
+            };
+            var parsedData = JsonConvert.SerializeObject(data, settings);
+            return Ok(parsedData);
         }
 
         [HttpPost("AddTeacher")]
