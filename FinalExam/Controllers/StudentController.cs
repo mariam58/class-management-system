@@ -2,6 +2,7 @@
 using FinalExam.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Newtonsoft.Json;
 
 namespace FinalExam.Controllers
 {
@@ -21,7 +22,13 @@ namespace FinalExam.Controllers
         public async Task<IActionResult> GetStudents()
         {
             var data = await _uow.studentRepository.GetAllAsync();
-            return Ok(data);
+            var settings = new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                Formatting = Formatting.Indented
+            };
+            var parsedData = JsonConvert.SerializeObject(data, settings);
+            return Ok(parsedData);
         }
 
         [HttpPost("AddStudent")]

@@ -49,7 +49,13 @@ namespace FinalExam.Controllers
 
                 await _uow.courseRepository.Add(course);
                 await _context.Database.CommitTransactionAsync();
-                return Ok(course);
+                var settings = new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    Formatting = Formatting.Indented
+                };
+                var parsedData = JsonConvert.SerializeObject(course, settings);
+                return Ok(parsedData);
             }
             catch (Exception ex)
             {

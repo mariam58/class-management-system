@@ -22,7 +22,13 @@ namespace FinalExam.Controllers
         public async Task<IActionResult> GetStudentCourses()
         {
             var data = await _uow.studentCourseRepository.GetAllAsync();
-            return Ok(data);
+            var settings = new JsonSerializerSettings()
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                Formatting = Formatting.Indented
+            };
+            var parsedData = JsonConvert.SerializeObject(data, settings);
+            return Ok(parsedData);
         }
 
         [HttpPost("AddStudentCourse")]
@@ -39,7 +45,13 @@ namespace FinalExam.Controllers
 
                 await _uow.studentCourseRepository.Add(studentCourse);
                 await _context.Database.CommitTransactionAsync();
-                return Ok(studentCourse);
+                var settings = new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    Formatting = Formatting.Indented
+                };
+                var parsedData = JsonConvert.SerializeObject(studentCourse, settings);
+                return Ok(parsedData);
             }
             catch (Exception ex)
             {
